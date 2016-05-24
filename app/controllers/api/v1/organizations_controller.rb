@@ -5,7 +5,7 @@ class Api::V1::OrganizationsController < ApplicationController
 	# list all organizations
 	def index
 		org = Organization.all
-		render :json => org.to_json(:include => :users)
+		response_api_include(:users,200,"success",org,nil)
 	end
 
 	# show an organization
@@ -15,7 +15,7 @@ class Api::V1::OrganizationsController < ApplicationController
 		rescue
 			org = {}
 		end	
-		render :json => org.to_json(:include => :users)
+		response_api_include(:users,200,"success",org,nil)
 	end	
 	
 	# store an organization
@@ -24,9 +24,9 @@ class Api::V1::OrganizationsController < ApplicationController
 		org.name = params[:name]
 		
 		if org.save
-			render :json => org.to_json(:include => :users)
+			response_api_include(:users,200,"success",org,nil)
 		else
-			render :json => org.errors.to_json	
+			response_api_include(:users,200,"success",{},org.errors)	
 		end	
 	end
 
@@ -36,9 +36,9 @@ class Api::V1::OrganizationsController < ApplicationController
 		org.name = params[:name]
 		
 		if org.save
-			render :json => org.to_json(:include => :users)
+			response_api_include(:users,200,"success",org,nil)
 		else
-			render :json => org.errors.to_json	
+			response_api_include(:users,200,"success",{},org.errors)	
 		end	
 	end
 
@@ -46,13 +46,7 @@ class Api::V1::OrganizationsController < ApplicationController
 	def destroy
 		org = Organization.find(params[:id])
 		org.delete
-		render :json => {}.to_json
+		response_api_include(:users,200,"success",{},nil)
 	end
-
-	# list all members
-	def members
-		org = Organization.find(params[:id])
-		render :json => org.users.to_json
-	end	
 
 end

@@ -5,17 +5,21 @@ class Api::V1::UsersController < ApplicationController
 	# list all users
 	def index
 		users = User.all
-		render :json => users.to_json(:include => :organizations)
+		response_api_include(:organizations,200,"success",users,nil)
 	end
 
 	# show a user
 	def show
 		begin
 			user = User.find(params[:id])
+			status = 200
+			message = "success"
 		rescue
 			user = {}
+			status = 404
+			message = "not found"
 		end	
-		render :json => user.to_json(:include => :organizations)
+		response_api_include(:organizations,status,message,user,nil)
 	end	
 	
 	# store a user
@@ -26,9 +30,9 @@ class Api::V1::UsersController < ApplicationController
 		user.email = params[:email]
 		
 		if user.save
-			render :json => user.to_json(:include => :organizations)
+			response_api_include(:organizations,200,"success",user,nil)
 		else
-			render :json => user.errors.to_json	
+			response_api_include(:organizations,403,"success",{},user.errors)
 		end	
 	end
 
@@ -40,9 +44,9 @@ class Api::V1::UsersController < ApplicationController
 		user.email = params[:email]
 		
 		if user.save
-			render :json => user.to_json(:include => :organizations)
+			response_api_include(:organizations,200,"success",user,nil)
 		else
-			render :json => user.errors.to_json	
+			response_api_include(:organizations,403,"success",{},user.errors)	
 		end	
 	end
 
@@ -50,20 +54,29 @@ class Api::V1::UsersController < ApplicationController
 	def destroy
 		user = User.find(params[:id])
 		user.delete
-		render :json => {}.to_json
+		response_api_include(:organizations,200,"success",{},nil)
 	end
 
 	# join a user to an organization
 	def join
+
+		#check if already joined
+		user = User.find(params[:id])
+		user.organizations.each do |org|
+			if org.id.to_s == params[:organization_id].to_s
+				message = "already joined"	
+			end	
+		end	
+
 		uorg = UserOrganization.create({
 			user_id: params[:id],
 			organization_id: params[:organization_id]
 		});
-		user = User.find(params[:id])
+		
 		if uorg.save
-			render :json => user.to_json(:include => :organizations)
+			response_api_include(:organizations,200,"success",user,nil)
 		else
-			render :json => uorg.errors.to_json	
+			response_api_include(:organizations,403,"success",{},user.errors)
 		end
 	end
 
@@ -76,8 +89,8 @@ class Api::V1::UsersController < ApplicationController
 		else
 			return_obj = {}
 		end	
-
-		render :json => return_obj.to_json(:include => :organizations)
+		user = User.find(params[:id])
+		response_api_include(:organizations,200,"success",user,nil)
 	end	
 
 end

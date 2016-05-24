@@ -5,7 +5,6 @@ Rails.application.routes.draw do
       post 'users/:id/join', to: 'users#join'
       post 'users/:id/leave', to: 'users#leave'
       resources :organizations, :except => [:new , :edit]
-      get 'organizations/:id/users', to: 'organizations#members'
     end  
   end  
 end
