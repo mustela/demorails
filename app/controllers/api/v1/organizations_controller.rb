@@ -5,7 +5,7 @@ class Api::V1::OrganizationsController < ApplicationController
 	# list all organizations
 	def index
 		org = Organization.all
-		render :json => org.to_json
+		render :json => org.to_json(:include => :users)
 	end
 
 	# show an organization
@@ -15,7 +15,7 @@ class Api::V1::OrganizationsController < ApplicationController
 		rescue
 			org = {}
 		end	
-		render :json => org.to_json
+		render :json => org.to_json(:include => :users)
 	end	
 	
 	# store an organization
@@ -24,7 +24,7 @@ class Api::V1::OrganizationsController < ApplicationController
 		org.name = params[:name]
 		
 		if org.save
-			render :json => org.to_json
+			render :json => org.to_json(:include => :users)
 		else
 			render :json => org.errors.to_json	
 		end	
@@ -36,7 +36,7 @@ class Api::V1::OrganizationsController < ApplicationController
 		org.name = params[:name]
 		
 		if org.save
-			render :json => org.to_json
+			render :json => org.to_json(:include => :users)
 		else
 			render :json => org.errors.to_json	
 		end	
