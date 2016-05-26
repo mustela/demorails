@@ -62,35 +62,46 @@ class Api::V1::UsersController < ApplicationController
 
 		#check if already joined
 		user = User.find(params[:id])
+		message = ""
 		user.organizations.each do |org|
 			if org.id.to_s == params[:organization_id].to_s
 				message = "already joined"	
 			end	
 		end	
 
-		uorg = UserOrganization.create({
-			user_id: params[:id],
-			organization_id: params[:organization_id]
-		});
-		
-		if uorg.save
-			response_api_include(:organizations,200,"success",user,nil)
+		if message != "already joined"
+			uorg = UserOrganization.create({
+				user_id: params[:id],
+				organization_id: params[:organization_id]
+			});
+
+			# refresh user data to include joined organizations
+			user = User.find(params[:id])
+
+			if uorg.save
+				response_api_include(:organizations,200,"success",user,nil)
+			else
+				response_api_include(:organizations,403,"success",{},user.errors)
+			end
 		else
-			response_api_include(:organizations,403,"success",{},user.errors)
-		end
+			response_api_include(:organizations,403,"already joined",user,nil)
+		end	
 	end
 
 	# leave a user from an organization 
 	def leave
-		uorg = UserOrganization.where("user_id = ? and organization_id = ?",params[:id],params[:organization_id]).first
-		if uorg
-			uorg.delete
-			return_obj = User.find(params[:id])
-		else
-			return_obj = {}
-		end	
-		user = User.find(params[:id])
-		response_api_include(:organizations,200,"success",user,nil)
+		if params[:organization_id] == ""
+			response_api_include(:organizations,500,"bad request",{},[:organization_id => 'can\'t be blank'])
+		else	
+			uorg = UserOrganization.where("user_id = ? and organization_id = ?",params[:id],params[:organization_id]).first
+			user = User.find(params[:id])
+			if uorg.nil?
+				response_api_include(:organizations,403,"already leave",user,nil)
+			else
+				uorg.delete
+				response_api_include(:organizations,200,"success",user,nil)
+			end
+		end
 	end	
 
 end
